@@ -76,23 +76,42 @@ Ver `public/images/LEEME.txt` para más detalles.
 
 ---
 
-## 🌐 Cómo subirlo a internet (gratis)
+## 🌐 Cómo subirlo a internet (gratis y confiable)
 
-Para que los invitados entren desde cualquier lugar (no solo tu WiFi), sube el
-proyecto a un hosting gratuito como **Render**:
+Usamos **Supabase** (base de datos gratis, donde se guardan las canciones para
+siempre) + **Render** (donde corre la app, gratis). Pasos:
 
-1. Crea una cuenta en https://render.com
-2. Sube esta carpeta a un repositorio de GitHub.
-3. En Render: **New → Web Service**, conecta el repo.
-4. Configura:
+### 1) Supabase — base de datos
+1. Crea una cuenta en https://supabase.com (botón "Start your project").
+2. Crea un proyecto nuevo (elige una contraseña para la base de datos y guárdala).
+3. En el menú lateral: **SQL Editor → New query**. Pega TODO el contenido del
+   archivo [`supabase-schema.sql`](supabase-schema.sql) y presiona **Run**.
+4. Ve a **Project Settings → API** y copia dos cosas:
+   - **Project URL** (ej. `https://xxxx.supabase.co`)
+   - La clave secreta **`service_role`** (en "Project API keys"). ⚠️ Es secreta.
+
+### 2) GitHub — guardar el código
+1. Crea una cuenta en https://github.com (si no tienes).
+2. Crea un repositorio nuevo y **vacío** (sin README), por ejemplo `boda-ma`.
+3. Copia la URL del repo (ej. `https://github.com/tuusuario/boda-ma.git`).
+   (Pídele a tu asistente que haga el `git push`, o sigue las instrucciones que
+   GitHub muestra para "push an existing repository".)
+
+### 3) Render — publicar la app
+1. Crea una cuenta en https://render.com (puedes entrar con GitHub).
+2. **New → Web Service** y conecta tu repositorio `boda-ma`.
+3. Configura:
    - **Build Command**: (déjalo vacío)
    - **Start Command**: `node server.js`
-5. Render te da una URL pública (ej. `https://boda-ma.onrender.com`). ¡Compártela!
+4. En **Environment → Add Environment Variable**, agrega TRES variables:
+   - `SUPABASE_URL` = la Project URL de Supabase
+   - `SUPABASE_KEY` = la clave `service_role`
+   - `ADMIN_KEY` = la contraseña que quieras para la bitácora
+5. **Create Web Service**. Render te dará una URL pública
+   (ej. `https://boda-ma.onrender.com`). ¡Esa es la que compartes con los invitados!
 
-> Nota: en hosting con almacenamiento efímero, el archivo `data/` puede reiniciarse
-> en cada redeploy. Para una boda real conviene descargar la lista final con
-> tiempo, o usar un disco persistente (Render lo ofrece). Si quieres, te ayudo a
-> conectarlo a una base de datos gratuita más adelante.
+> Las canciones se guardan en Supabase, así que **nunca se pierden** aunque Render
+> reinicie o "duerma" el servidor.
 
 ---
 
@@ -100,17 +119,22 @@ proyecto a un hosting gratuito como **Render**:
 
 ```
 MusicaBodaM&A/
-├── server.js          # Servidor (Node nativo, sin dependencias)
+├── server.js            # Servidor (Node nativo, sin dependencias)
+├── storage.js           # Almacenamiento: archivos locales o Supabase
+├── supabase-schema.sql  # SQL para crear las tablas en Supabase
+├── .env.example         # Plantilla de variables de entorno
 ├── package.json
-├── data/              # Datos guardados (se crean solos)
-│   ├── songs.json     # Lista de canciones
-│   └── log.json       # Bitácora
-└── public/            # Sitio web
+├── data/                # Datos LOCALES (se crean solos; en la nube se usa Supabase)
+│   ├── songs.json
+│   └── log.json
+└── public/              # Sitio web
     ├── index.html
+    ├── bitacora.html    # Bitácora privada (con contraseña)
     ├── styles.css
     ├── app.js
-    ├── logo.svg       # Logo monograma M & A
-    └── images/        # ← aquí van las fotos de los novios
+    ├── bitacora.js
+    ├── logo.svg         # Logo monograma M & A
+    └── images/          # ← aquí van las fotos de los novios
 ```
 
 ---
