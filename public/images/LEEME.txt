@@ -1,0 +1,15 @@
+FOTOS DE LOS NOVIOS
+===================
+
+Coloca aquí tus 3 fotos con EXACTAMENTE estos nombres:
+
+  novios-1.jpg   -> foto vertical grande (recomendado: la de la pedida arrojando el anillo / abrazo)
+  novios-2.jpg   -> foto cuadrada o vertical (ej. el beso frente a la Fontana)
+  novios-3.jpg   -> foto del anillo de compromiso
+
+Notas:
+- Pueden ser .jpg o .jpeg. Si usas .png, cambia la extensión en el archivo
+  public/index.html (busca "novios-1.jpg", etc.).
+- Si no pones las fotos, el sitio funciona igual y muestra un recuadro con un 🤍
+  en su lugar, así que no se rompe nada.
+- Tamaño recomendado: máximo ~1500 px de ancho para que cargue rápido.

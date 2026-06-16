@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bitácora privada · M &amp; A</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="logo.svg" type="image/svg+xml" />
+</head>
+<body class="admin-body">
+  <main class="admin-main">
+    <div class="admin-head">
+      <div class="monogram-sm">M &amp; A</div>
+      <h1 class="section-title">Bitácora privada</h1>
+      <p class="section-hint">Solo para los novios. Registro de quién agregó cada canción y quién intentó subir una repetida.</p>
+    </div>
+
+    <!-- Entrada de contraseña -->
+    <section class="card" id="gate">
+      <form id="gate-form" autocomplete="off">
+        <div class="field">
+          <label for="key">Contraseña</label>
+          <input type="password" id="key" name="key" placeholder="Escribe la clave privada" required />
+        </div>
+        <button type="submit" class="btn" id="gate-btn">Entrar</button>
+        <p class="form-msg" id="gate-msg" role="status"></p>
+      </form>
+    </section>
+
+    <!-- Bitácora (oculta hasta autenticarse) -->
+    <section class="card" id="log-panel" hidden>
+      <div class="section-head">
+        <h2 class="section-title">Actividad <span class="count" id="log-count">0</span></h2>
+        <button class="toggle" id="logout-btn">Salir</button>
+      </div>
+      <ul class="log-list" id="log-list"></ul>
+      <p class="empty-state" id="log-empty" hidden>Todavía no hay actividad.</p>
+    </section>
+
+    <p class="admin-back"><a class="footer-link" href="index.html">← Volver al sitio</a></p>
+  </main>
+
+  <script src="bitacora.js"></script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+node_modules/
+npm-debug.log*
+.DS_Store
+Thumbs.db
+
+# Datos locales (en producción se usa Supabase)
+data/
+
+# Variables de entorno reales (¡nunca subir claves!)
+.env

@@ -1,0 +1,12 @@
+{
+  "name": "musica-boda-m-a",
+  "version": "1.0.0",
+  "description": "Sitio para recopilar canciones para la boda de M & A",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=16"
+  }
+}
