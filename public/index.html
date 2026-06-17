@@ -75,18 +75,21 @@
 
     <!-- ===== Formulario ===== -->
     <section class="card form-section" id="agregar">
-      <h2 class="section-title">Agregar una canción</h2>
+      <h2 class="section-title">Agregar canciones</h2>
       <form id="song-form" autocomplete="off">
         <div class="field">
           <label for="by">Tu nombre</label>
           <input type="text" id="by" name="by" placeholder="Ej. Mariel" required />
         </div>
         <div class="field">
-          <label for="url">Enlace de la canción</label>
-          <input type="url" id="url" name="url" placeholder="https://... (YouTube, Spotify, Apple Music)" required />
+          <label for="url">Enlace(s) de la canción</label>
+          <textarea id="url" name="url" rows="3" placeholder="Pega uno o varios enlaces, uno por línea:
+https://www.youtube.com/watch?v=...
+https://open.spotify.com/track/..." required></textarea>
+          <span class="hint-inline">💡 Puedes pegar <strong>varias canciones a la vez</strong>, una por línea.</span>
         </div>
         <div class="field">
-          <label for="name">Nombre de la canción <span class="optional">(opcional — lo detectamos solos)</span></label>
+          <label for="name">Nombre de la canción <span class="optional">(opcional — solo si pegas un enlace; si no, lo detectamos solos)</span></label>
           <input type="text" id="name" name="name" placeholder="Ej. Perfect — Ed Sheeran" />
         </div>
         <button type="submit" class="btn" id="submit-btn">Agregar a la lista</button>

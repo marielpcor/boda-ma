@@ -40,10 +40,18 @@ const fileBackend = {
   },
   async addSong(song) {
     const songs = readJson(SONGS_FILE);
-    const full = { id: nextId(), ...song };
+    const full = { id: nextId(), requests: 1, ...song };
     songs.push(full);
     writeJson(SONGS_FILE, songs);
     return full;
+  },
+  async incrementRequests(existing) {
+    const songs = readJson(SONGS_FILE);
+    const s = songs.find((x) => x.key === existing.key);
+    if (!s) return existing;
+    s.requests = (s.requests || 1) + 1;
+    writeJson(SONGS_FILE, songs);
+    return s;
   },
   async getLog() {
     return readJson(LOG_FILE);
@@ -107,6 +115,7 @@ function rowToSong(r) {
     platform: r.platform,
     addedBy: r.added_by,
     addedAt: r.added_at,
+    requests: r.requests || 1,
   };
 }
 function rowToLog(r) {
@@ -138,8 +147,18 @@ const supabaseBackend = {
       platform: song.platform,
       added_by: song.addedBy,
       added_at: song.addedAt,
+      requests: 1,
     }]);
     return rowToSong(rows[0]);
+  },
+  async incrementRequests(existing) {
+    const next = (existing.requests || 1) + 1;
+    const rows = await supabaseRequest(
+      'PATCH',
+      '/songs?song_key=eq.' + encodeURIComponent(existing.key),
+      { requests: next }
+    );
+    return rows && rows[0] ? rowToSong(rows[0]) : { ...existing, requests: next };
   },
   async getLog() {
     const rows = await supabaseRequest('GET', '/log?select=*&order=created_at.desc');

@@ -174,7 +174,8 @@ main {
   font-weight: 500;
 }
 .field .optional { color: var(--muted); font-weight: 400; text-transform: none; }
-.field input {
+.field input,
+.field textarea {
   width: 100%;
   padding: 13px 15px;
   border: 1.5px solid var(--cream-deep);
@@ -185,11 +186,14 @@ main {
   background: #fcfaf5;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
-.field input:focus {
+.field textarea { resize: vertical; min-height: 84px; line-height: 1.5; }
+.field input:focus,
+.field textarea:focus {
   outline: none;
   border-color: var(--gold);
   box-shadow: 0 0 0 3px rgba(191,160,104,0.18);
 }
+.hint-inline { display: block; margin-top: 6px; font-size: 0.82rem; color: var(--muted); }
 
 .btn {
   width: 100%;
@@ -266,6 +270,37 @@ main {
 }
 .song-item .play:hover { background: var(--gold); color: #fff; }
 
+/* Favoritas (más pedidas) */
+.song-item.is-fav {
+  background: linear-gradient(90deg, rgba(191,160,104,0.10), transparent 70%);
+  border-radius: 12px;
+}
+.song-item.is-fav .num {
+  background: var(--gold);
+  color: #fff;
+  border-color: var(--gold);
+}
+.fav-tag {
+  display: inline-block;
+  margin-left: 8px;
+  font-family: 'Jost', sans-serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.03em;
+  color: var(--gold-dark);
+  background: rgba(191,160,104,0.16);
+  border-radius: 999px;
+  padding: 1px 8px;
+  vertical-align: 2px;
+  white-space: nowrap;
+}
+.song-item .votes {
+  flex: 0 0 auto;
+  font-size: 0.82rem;
+  color: var(--gold-dark);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
 /* ===== Bitácora ===== */
 .toggle, .btn-link {
   background: none;
@@ -295,6 +330,7 @@ main {
 }
 .log-item.added .dot { background: var(--sage); }
 .log-item.duplicate .dot { background: var(--gold); }
+.log-item.favorite .dot { background: var(--gold); }
 .log-item .when { color: var(--muted); font-size: 0.78rem; display: block; }
 
 .empty-state { color: var(--muted); font-style: italic; text-align: center; padding: 16px 0; }

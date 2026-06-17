@@ -160,43 +160,60 @@ function serveStatic(req, res) {
 }
 
 // ---------- Lógica de canciones ----------
+// Extrae uno o varios enlaces del cuerpo (uno por línea, separados por espacios o comas).
+function parseUrls(body) {
+  let raw = [];
+  if (Array.isArray(body.urls)) raw = raw.concat(body.urls);
+  if (typeof body.url === 'string') raw = raw.concat(body.url.split(/[\s,]+/));
+  return raw.map((s) => String(s).trim()).filter(Boolean);
+}
+
 async function addSong(req, res) {
   const body = await readBody(req);
   const by = (body.by || '').trim();
-  const url = (body.url || '').trim();
-  let name = (body.name || '').trim();
+  const items = parseUrls(body);
+  // El nombre manual solo aplica si se pegó UN solo enlace.
+  const singleName = items.length === 1 ? (body.name || '').trim() : '';
 
   if (!by) return sendJson(res, 400, { error: 'Por favor escribe tu nombre.' });
-  if (!url) return sendJson(res, 400, { error: 'Por favor pega el enlace de la canción.' });
-  if (!isValidUrl(url)) return sendJson(res, 400, { error: 'El enlace no parece válido. Copia la URL completa (https://...).' });
+  if (!items.length) return sendJson(res, 400, { error: 'Por favor pega al menos un enlace de canción.' });
 
-  const key = normalizeUrl(url);
-  const platform = detectPlatform(url);
-  const now = new Date().toISOString();
+  const result = { added: [], favorites: [], invalid: [] };
+  const seen = new Set(); // evita contar dos veces el mismo enlace en un solo envío
 
-  const existing = await backend.findSongByKey(key);
-  if (existing) {
-    await backend.addLog({
-      type: 'duplicate', by, name: existing.name, url, at: now,
-      message: `${by} intentó subir una canción que ya estaba en la lista ("${existing.name}", agregada por ${existing.addedBy}).`,
-    });
-    return sendJson(res, 409, {
-      error: `¡Esa canción ya está en la lista! "${existing.name}" la agregó ${existing.addedBy}.`,
-      duplicate: true,
-    });
+  for (const url of items) {
+    if (!isValidUrl(url)) { result.invalid.push(url); continue; }
+    const key = normalizeUrl(url);
+    if (seen.has(key)) continue;
+    seen.add(key);
+
+    const now = new Date().toISOString();
+    const existing = await backend.findSongByKey(key);
+
+    if (existing) {
+      // Ya está: no se duplica, suma a "favoritas".
+      const updated = await backend.incrementRequests(existing);
+      await backend.addLog({
+        type: 'favorite', by, name: updated.name, url, at: now,
+        message: `${by} también pidió "${updated.name}" — ya son ${updated.requests} pedidos. ⭐`,
+      });
+      result.favorites.push(updated);
+    } else {
+      // Nueva canción.
+      let name = singleName;
+      if (!name) {
+        const fetched = await fetchTitle(url);
+        if (fetched) name = fetched;
+      }
+      if (!name) name = fallbackName(url);
+      const platform = detectPlatform(url);
+      const song = await backend.addSong({ name, url, key, platform, addedBy: by, addedAt: now, requests: 1 });
+      await backend.addLog({ type: 'added', by, name, url, at: now, message: `${by} agregó "${name}".` });
+      result.added.push(song);
+    }
   }
 
-  if (!name) {
-    const fetched = await fetchTitle(url);
-    if (fetched) name = fetched;
-  }
-  if (!name) name = fallbackName(url);
-
-  const song = await backend.addSong({ name, url, key, platform, addedBy: by, addedAt: now });
-
-  await backend.addLog({ type: 'added', by, name, url, at: now, message: `${by} agregó "${name}".` });
-
-  sendJson(res, 201, { song });
+  sendJson(res, 200, result);
 }
 
 // ---------- Router ----------

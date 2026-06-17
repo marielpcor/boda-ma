@@ -10,9 +10,13 @@ const songList = document.getElementById('song-list');
 const songsEmpty = document.getElementById('songs-empty');
 const songCount = document.getElementById('song-count');
 
-// Recuerda el nombre de quien usa el sitio (sin login)
+// Recuerda el nombre de quien usa el sitio (sin login).
+// Se conserva aunque refresque la página; solo se borra si limpia la caché.
 const SAVED_NAME = 'boda_ma_nombre';
 byInput.value = localStorage.getItem(SAVED_NAME) || '';
+byInput.addEventListener('input', () => {
+  localStorage.setItem(SAVED_NAME, byInput.value.trim());
+});
 
 function escapeHtml(str) {
   return String(str).replace(/[&<>"']/g, (c) => (
@@ -36,15 +40,29 @@ function renderSongs(songs) {
   songList.innerHTML = '';
   songsEmpty.hidden = songs.length > 0;
 
-  songs.forEach((s, i) => {
+  // Las más pedidas (favoritas) primero; a igualdad, las más antiguas arriba.
+  const ordered = songs.slice().sort((a, b) => {
+    const ra = a.requests || 1;
+    const rb = b.requests || 1;
+    if (rb !== ra) return rb - ra;
+    return new Date(a.addedAt) - new Date(b.addedAt);
+  });
+
+  ordered.forEach((s, i) => {
+    const reqs = s.requests || 1;
+    const isFav = reqs >= 2;
+    const favTag = isFav ? '<span class="fav-tag">⭐ Favorita</span>' : '';
+    const votes = isFav ? `<span class="votes" title="${reqs} personas la pidieron">❤️ ${reqs}</span>` : '';
+
     const li = document.createElement('li');
-    li.className = 'song-item';
+    li.className = 'song-item' + (isFav ? ' is-fav' : '');
     li.innerHTML = `
       <span class="num">${i + 1}</span>
       <span class="info">
-        <span class="title" title="${escapeHtml(s.name)}">${escapeHtml(s.name)}</span>
+        <span class="title" title="${escapeHtml(s.name)}">${escapeHtml(s.name)}${favTag}</span>
         <span class="meta"><span class="badge">${escapeHtml(s.platform)}</span>Agregada por ${escapeHtml(s.addedBy)}</span>
       </span>
+      ${votes}
       <a class="play" href="${escapeHtml(s.url)}" target="_blank" rel="noopener noreferrer">Escuchar ↗</a>
     `;
     songList.appendChild(li);
@@ -73,7 +91,7 @@ form.addEventListener('submit', async (e) => {
   const name = nameInput.value.trim();
 
   if (!by) return setMsg('Por favor escribe tu nombre.', 'err');
-  if (!url) return setMsg('Por favor pega el enlace de la canción.', 'err');
+  if (!url) return setMsg('Por favor pega al menos un enlace de canción.', 'err');
 
   localStorage.setItem(SAVED_NAME, by);
   submitBtn.disabled = true;
@@ -87,16 +105,33 @@ form.addEventListener('submit', async (e) => {
     });
     const data = await res.json();
 
-    if (res.ok) {
-      setMsg(`¡Listo! Se agregó "${data.song.name}" 🎶`, 'ok');
-      urlInput.value = '';
-      nameInput.value = '';
-      await loadData();
-    } else {
+    if (!res.ok) {
       setMsg(data.error || 'Ocurrió un error.', 'err');
-      // Aunque sea duplicado, refrescamos para mostrar la bitácora actualizada
-      await loadData();
+      return;
     }
+
+    // Resumen del lote
+    const parts = [];
+    if (data.added && data.added.length) {
+      parts.push(data.added.length === 1
+        ? `Se agregó "${data.added[0].name}" 🎶`
+        : `Se agregaron ${data.added.length} canciones 🎶`);
+    }
+    if (data.favorites && data.favorites.length) {
+      parts.push(data.favorites.length === 1
+        ? `"${data.favorites[0].name}" ya estaba — ¡sumaste a favoritas! ⭐`
+        : `${data.favorites.length} ya estaban — sumaron a favoritas ⭐`);
+    }
+    if (data.invalid && data.invalid.length) {
+      parts.push(`${data.invalid.length} enlace(s) no válido(s) ⚠️`);
+    }
+    const ok = (data.added && data.added.length) || (data.favorites && data.favorites.length);
+    setMsg(parts.join(' · ') || 'No se procesó ningún enlace.', ok ? 'ok' : 'err');
+
+    if (data.added && data.added.length) urlInput.value = '';
+    nameInput.value = '';
+    // NO borramos el nombre de la persona (byInput): se conserva.
+    await loadData();
   } catch (err) {
     setMsg('No se pudo conectar con el servidor. Intenta de nuevo.', 'err');
   } finally {

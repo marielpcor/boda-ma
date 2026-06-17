@@ -33,7 +33,7 @@ function renderLog(log) {
   logList.innerHTML = '';
   log.forEach((entry) => {
     const li = document.createElement('li');
-    li.className = 'log-item ' + (entry.type === 'duplicate' ? 'duplicate' : 'added');
+    li.className = 'log-item ' + (entry.type === 'added' ? 'added' : 'favorite');
     li.innerHTML = `
       <span class="dot"></span>
       <span>

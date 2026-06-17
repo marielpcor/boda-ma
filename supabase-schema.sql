@@ -14,7 +14,8 @@ create table if not exists songs (
   song_key   text not null unique,   -- clave para evitar duplicados
   platform   text,
   added_by   text not null,
-  added_at   timestamptz not null default now()
+  added_at   timestamptz not null default now(),
+  requests   integer not null default 1   -- cuántas veces la han pedido (favoritas)
 );
 
 -- Tabla de bitácora
