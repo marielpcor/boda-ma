@@ -221,14 +221,13 @@ main {
 /* ===== Lista de canciones ===== */
 .song-list { list-style: none; margin: 6px 0 0; padding: 0; }
 .song-item {
-  display: flex;
-  align-items: center;
-  gap: 14px;
   padding: 14px 4px;
   border-bottom: 1px solid var(--cream-deep);
   animation: fadeIn 0.35s ease;
 }
 .song-item:last-child { border-bottom: none; }
+.song-row { display: flex; align-items: center; gap: 14px; }
+.song-item .actions { flex: 0 0 auto; display: flex; align-items: center; gap: 8px; }
 .song-item .num {
   flex: 0 0 auto;
   width: 30px; height: 30px;
@@ -299,6 +298,47 @@ main {
   color: var(--gold-dark);
   font-weight: 500;
   white-space: nowrap;
+}
+
+/* Botón y reproductor de vista previa */
+.preview-btn {
+  flex: 0 0 auto;
+  background: none;
+  border: 1.5px solid var(--sage);
+  color: var(--sage-dark);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-family: 'Jost', sans-serif;
+  font-size: 0.8rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s, color 0.2s;
+}
+.preview-btn:hover { background: var(--sage); color: #fff; }
+.preview-btn[aria-expanded="true"] { background: var(--sage); color: #fff; }
+
+.preview { margin: 12px 0 4px; padding-left: 44px; animation: fadeIn 0.3s ease; }
+.preview .yt-frame {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  aspect-ratio: 16 / 9;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.preview .yt-frame iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+.preview .sp-frame {
+  width: 100%;
+  max-width: 480px;
+  border: 0;
+  border-radius: 12px;
 }
 
 /* ===== Bitácora ===== */
@@ -376,4 +416,7 @@ main {
   .intro__photos { gap: 10px; }
   .card { padding: 24px 18px; }
   .song-item .play { padding: 6px 10px; }
+  .song-row { flex-wrap: wrap; }
+  .song-item .info { flex-basis: 100%; order: -1; }
+  .preview { padding-left: 0; }
 }

@@ -24,6 +24,42 @@ function escapeHtml(str) {
   ));
 }
 
+// Extrae el ID de YouTube de cualquier forma de enlace.
+function youtubeId(u) {
+  try {
+    const url = new URL(u);
+    const h = url.hostname.replace(/^www\./, '');
+    if (h === 'youtu.be') return url.pathname.slice(1).split('/')[0];
+    if (h.includes('youtube.com')) {
+      if (url.searchParams.get('v')) return url.searchParams.get('v');
+      const parts = url.pathname.split('/').filter(Boolean);
+      if (parts[0] === 'shorts' || parts[0] === 'embed') return parts[1];
+    }
+  } catch (e) { /* noop */ }
+  return null;
+}
+
+// Extrae el ID de pista de Spotify.
+function spotifyTrackId(u) {
+  try {
+    const url = new URL(u);
+    if (!url.hostname.includes('open.spotify.com')) return null;
+    const parts = url.pathname.split('/').filter(Boolean);
+    const i = parts.indexOf('track');
+    if (i !== -1 && parts[i + 1]) return parts[i + 1].split('?')[0];
+  } catch (e) { /* noop */ }
+  return null;
+}
+
+// Devuelve datos para el reproductor embebido, o null si no se puede previsualizar.
+function getEmbed(songUrl) {
+  const yt = youtubeId(songUrl);
+  if (yt) return { kind: 'youtube', src: 'https://www.youtube.com/embed/' + yt };
+  const sp = spotifyTrackId(songUrl);
+  if (sp) return { kind: 'spotify', src: 'https://open.spotify.com/embed/track/' + sp, height: 152 };
+  return null;
+}
+
 function formatDate(iso) {
   try {
     const d = new Date(iso);
@@ -54,20 +90,67 @@ function renderSongs(songs) {
     const favTag = isFav ? '<span class="fav-tag">⭐ Favorita</span>' : '';
     const votes = isFav ? `<span class="votes" title="${reqs} personas la pidieron">❤️ ${reqs}</span>` : '';
 
+    const embed = getEmbed(s.url);
+    const previewBtn = embed
+      ? `<button type="button" class="preview-btn" aria-expanded="false">▶ Vista previa</button>`
+      : '';
+    const previewBox = embed
+      ? `<div class="preview" hidden data-src="${escapeHtml(embed.src)}" data-kind="${embed.kind}" data-h="${embed.height || 0}"></div>`
+      : '';
+
     const li = document.createElement('li');
     li.className = 'song-item' + (isFav ? ' is-fav' : '');
     li.innerHTML = `
-      <span class="num">${i + 1}</span>
-      <span class="info">
-        <span class="title" title="${escapeHtml(s.name)}">${escapeHtml(s.name)}${favTag}</span>
-        <span class="meta"><span class="badge">${escapeHtml(s.platform)}</span>Agregada por ${escapeHtml(s.addedBy)}</span>
-      </span>
-      ${votes}
-      <a class="play" href="${escapeHtml(s.url)}" target="_blank" rel="noopener noreferrer">Escuchar ↗</a>
+      <div class="song-row">
+        <span class="num">${i + 1}</span>
+        <span class="info">
+          <span class="title" title="${escapeHtml(s.name)}">${escapeHtml(s.name)}${favTag}</span>
+          <span class="meta"><span class="badge">${escapeHtml(s.platform)}</span>Agregada por ${escapeHtml(s.addedBy)}</span>
+        </span>
+        ${votes}
+        <span class="actions">
+          ${previewBtn}
+          <a class="play" href="${escapeHtml(s.url)}" target="_blank" rel="noopener noreferrer">Escuchar ↗</a>
+        </span>
+      </div>
+      ${previewBox}
     `;
     songList.appendChild(li);
   });
 }
+
+// Mostrar / ocultar la vista previa (el iframe se crea solo al abrir).
+songList.addEventListener('click', (e) => {
+  const btn = e.target.closest('.preview-btn');
+  if (!btn) return;
+  const item = btn.closest('.song-item');
+  const box = item && item.querySelector('.preview');
+  if (!box) return;
+
+  const isOpen = !box.hidden;
+  if (isOpen) {
+    box.hidden = true;
+    box.innerHTML = ''; // libera el reproductor
+    btn.setAttribute('aria-expanded', 'false');
+    btn.textContent = '▶ Vista previa';
+    return;
+  }
+
+  const src = box.dataset.src;
+  if (box.dataset.kind === 'youtube') {
+    box.innerHTML =
+      `<div class="yt-frame"><iframe src="${src}" title="Vista previa"
+        allow="encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="lazy"></iframe></div>`;
+  } else {
+    const h = box.dataset.h && box.dataset.h !== '0' ? box.dataset.h : 152;
+    box.innerHTML =
+      `<iframe class="sp-frame" src="${src}" title="Vista previa" height="${h}"
+        allow="encrypted-media" loading="lazy"></iframe>`;
+  }
+  box.hidden = false;
+  btn.setAttribute('aria-expanded', 'true');
+  btn.textContent = '✕ Ocultar';
+});
 
 async function loadData() {
   try {
