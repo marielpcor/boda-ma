@@ -56,7 +56,7 @@ function getEmbed(songUrl) {
   const yt = youtubeId(songUrl);
   if (yt) return { kind: 'youtube', src: 'https://www.youtube.com/embed/' + yt };
   const sp = spotifyTrackId(songUrl);
-  if (sp) return { kind: 'spotify', src: 'https://open.spotify.com/embed/track/' + sp, height: 152 };
+  if (sp) return { kind: 'spotify', src: 'https://open.spotify.com/embed/track/' + sp + '?theme=0', height: 80 };
   return null;
 }
 
