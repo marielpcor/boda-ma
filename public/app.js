@@ -91,12 +91,20 @@ function renderSongs(songs) {
     const votes = isFav ? `<span class="votes" title="${reqs} personas la pidieron">❤️ ${reqs}</span>` : '';
 
     const embed = getEmbed(s.url);
-    const previewBtn = embed
-      ? `<button type="button" class="preview-btn" aria-expanded="false">▶ Vista previa</button>`
-      : '';
-    const previewBox = embed
-      ? `<div class="preview" hidden data-src="${escapeHtml(embed.src)}" data-kind="${embed.kind}" data-h="${embed.height || 0}"></div>`
-      : '';
+    let player;
+    if (embed && embed.kind === 'youtube') {
+      player = `<div class="preview"><div class="yt-frame"><iframe src="${escapeHtml(embed.src)}"
+        title="${escapeHtml(s.name)}" loading="lazy"
+        allow="encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div></div>`;
+    } else if (embed && embed.kind === 'spotify') {
+      player = `<div class="preview"><iframe class="sp-frame" src="${escapeHtml(embed.src)}"
+        title="${escapeHtml(s.name)}" height="${embed.height || 152}" loading="lazy"
+        allow="encrypted-media"></iframe></div>`;
+    } else {
+      // Plataformas sin reproductor embebido: enlace de respaldo.
+      player = `<div class="preview preview--link"><a class="play" href="${escapeHtml(s.url)}"
+        target="_blank" rel="noopener noreferrer">Abrir enlace ↗</a></div>`;
+    }
 
     const li = document.createElement('li');
     li.className = 'song-item' + (isFav ? ' is-fav' : '');
@@ -108,49 +116,12 @@ function renderSongs(songs) {
           <span class="meta"><span class="badge">${escapeHtml(s.platform)}</span>Agregada por ${escapeHtml(s.addedBy)}</span>
         </span>
         ${votes}
-        <span class="actions">
-          ${previewBtn}
-          <a class="play" href="${escapeHtml(s.url)}" target="_blank" rel="noopener noreferrer">Escuchar ↗</a>
-        </span>
       </div>
-      ${previewBox}
+      ${player}
     `;
     songList.appendChild(li);
   });
 }
-
-// Mostrar / ocultar la vista previa (el iframe se crea solo al abrir).
-songList.addEventListener('click', (e) => {
-  const btn = e.target.closest('.preview-btn');
-  if (!btn) return;
-  const item = btn.closest('.song-item');
-  const box = item && item.querySelector('.preview');
-  if (!box) return;
-
-  const isOpen = !box.hidden;
-  if (isOpen) {
-    box.hidden = true;
-    box.innerHTML = ''; // libera el reproductor
-    btn.setAttribute('aria-expanded', 'false');
-    btn.textContent = '▶ Vista previa';
-    return;
-  }
-
-  const src = box.dataset.src;
-  if (box.dataset.kind === 'youtube') {
-    box.innerHTML =
-      `<div class="yt-frame"><iframe src="${src}" title="Vista previa"
-        allow="encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="lazy"></iframe></div>`;
-  } else {
-    const h = box.dataset.h && box.dataset.h !== '0' ? box.dataset.h : 152;
-    box.innerHTML =
-      `<iframe class="sp-frame" src="${src}" title="Vista previa" height="${h}"
-        allow="encrypted-media" loading="lazy"></iframe>`;
-  }
-  box.hidden = false;
-  btn.setAttribute('aria-expanded', 'true');
-  btn.textContent = '✕ Ocultar';
-});
 
 async function loadData() {
   try {

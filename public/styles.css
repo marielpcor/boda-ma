@@ -227,7 +227,6 @@ main {
 }
 .song-item:last-child { border-bottom: none; }
 .song-row { display: flex; align-items: center; gap: 14px; }
-.song-item .actions { flex: 0 0 auto; display: flex; align-items: center; gap: 8px; }
 .song-item .num {
   flex: 0 0 auto;
   width: 30px; height: 30px;
@@ -300,24 +299,9 @@ main {
   white-space: nowrap;
 }
 
-/* Botón y reproductor de vista previa */
-.preview-btn {
-  flex: 0 0 auto;
-  background: none;
-  border: 1.5px solid var(--sage);
-  color: var(--sage-dark);
-  border-radius: 999px;
-  padding: 6px 12px;
-  font-family: 'Jost', sans-serif;
-  font-size: 0.8rem;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background 0.2s, color 0.2s;
-}
-.preview-btn:hover { background: var(--sage); color: #fff; }
-.preview-btn[aria-expanded="true"] { background: var(--sage); color: #fff; }
-
-.preview { margin: 12px 0 4px; padding-left: 44px; animation: fadeIn 0.3s ease; }
+/* Reproductor embebido (siempre visible) */
+.preview { margin: 12px 0 4px; padding-left: 44px; }
+.preview--link { padding-top: 2px; }
 .preview .yt-frame {
   position: relative;
   width: 100%;
