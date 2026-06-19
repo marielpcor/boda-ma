@@ -5,6 +5,7 @@ const fs = require('fs');
 const https = require('https');
 const { URL } = require('url');
 const { backend, usingSupabase } = require('./storage');
+const musicSearch = require('./search');
 
 const PORT = process.env.PORT || 3000;
 
@@ -171,17 +172,29 @@ function parseUrls(body) {
 async function addSong(req, res) {
   const body = await readBody(req);
   const by = (body.by || '').trim();
-  const items = parseUrls(body);
-  // El nombre manual solo aplica si se pegó UN solo enlace.
-  const singleName = items.length === 1 ? (body.name || '').trim() : '';
+
+  // Canciones del buscador llegan en "items" (con nombre conocido);
+  // los enlaces pegados llegan en "url"/"urls" (sin nombre).
+  let entries = [];
+  if (Array.isArray(body.items)) {
+    entries = body.items
+      .filter((it) => it && it.url)
+      .map((it) => ({ url: String(it.url).trim(), name: (it.name || '').trim() }));
+  }
+  entries = entries.concat(parseUrls(body).map((u) => ({ url: u, name: '' })));
+  // El nombre manual solo aplica si se envió UNA sola canción sin nombre.
+  if (entries.length === 1 && !entries[0].name && (body.name || '').trim()) {
+    entries[0].name = (body.name || '').trim();
+  }
 
   if (!by) return sendJson(res, 400, { error: 'Por favor escribe tu nombre.' });
-  if (!items.length) return sendJson(res, 400, { error: 'Por favor pega al menos un enlace de canción.' });
+  if (!entries.length) return sendJson(res, 400, { error: 'Por favor elige o pega al menos una canción.' });
 
   const result = { added: [], favorites: [], invalid: [] };
-  const seen = new Set(); // evita contar dos veces el mismo enlace en un solo envío
+  const seen = new Set(); // evita contar dos veces la misma canción en un solo envío
 
-  for (const url of items) {
+  for (const entry of entries) {
+    const url = entry.url;
     if (!isValidUrl(url)) { result.invalid.push(url); continue; }
     const key = normalizeUrl(url);
     if (seen.has(key)) continue;
@@ -200,7 +213,7 @@ async function addSong(req, res) {
       result.favorites.push(updated);
     } else {
       // Nueva canción.
-      let name = singleName;
+      let name = entry.name;
       if (!name) {
         const fetched = await fetchTitle(url);
         if (fetched) name = fetched;
@@ -238,6 +251,23 @@ const server = http.createServer(async (req, res) => {
   if (req.method === 'POST' && pathname === '/api/songs') {
     try { return await addSong(req, res); }
     catch (e) { return sendJson(res, 500, { error: 'Error en el servidor.' }); }
+  }
+  if (req.method === 'GET' && pathname === '/api/sources') {
+    // Qué plataformas de búsqueda están disponibles.
+    return sendJson(res, 200, musicSearch.sources());
+  }
+  if (req.method === 'GET' && pathname === '/api/search') {
+    const url = new URL(req.url, 'http://x');
+    const source = (url.searchParams.get('source') || 'apple').toLowerCase();
+    const q = (url.searchParams.get('q') || '').trim();
+    if (q.length < 2) return sendJson(res, 200, { results: [] });
+    try {
+      const results = await musicSearch.search(source, q);
+      return sendJson(res, 200, { results });
+    } catch (e) {
+      if (e.notConfigured) return sendJson(res, 503, { error: e.message, notConfigured: true });
+      return sendJson(res, 502, { error: 'No se pudo buscar en este momento. Intenta de nuevo.' });
+    }
   }
   if (req.method === 'GET') return serveStatic(req, res);
 

@@ -212,11 +212,106 @@ main {
 }
 .btn:hover { transform: translateY(-2px); box-shadow: 0 12px 26px rgba(156,126,77,0.34); }
 .btn:active { transform: translateY(0); }
-.btn:disabled { opacity: 0.6; cursor: wait; transform: none; }
+.btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+.btn--soft {
+  background: var(--sage);
+  box-shadow: 0 8px 20px rgba(93,110,99,0.22);
+}
+.btn--soft:hover { box-shadow: 0 12px 26px rgba(93,110,99,0.28); }
 
 .form-msg { margin: 14px 0 0; font-size: 0.95rem; min-height: 1.2em; }
 .form-msg.ok { color: var(--sage-dark); }
 .form-msg.err { color: #b4564b; }
+
+/* ===== Buscador ===== */
+.source-tabs { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+.source-tab {
+  background: #fcfaf5;
+  border: 1.5px solid var(--cream-deep);
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-family: 'Jost', sans-serif;
+  font-size: 0.86rem;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+}
+.source-tab:hover { border-color: var(--gold); }
+.source-tab.active {
+  background: var(--sage);
+  border-color: var(--sage);
+  color: #fff;
+}
+.search-box input[type="search"] {
+  width: 100%;
+  padding: 13px 15px;
+  border: 1.5px solid var(--cream-deep);
+  border-radius: 12px;
+  font-family: 'Jost', sans-serif;
+  font-size: 1rem;
+  color: var(--ink);
+  background: #fcfaf5;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.search-box input:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(191,160,104,0.18);
+}
+.search-status { margin: 8px 0 0; font-size: 0.85rem; color: var(--muted); min-height: 1em; }
+
+.results { list-style: none; margin: 10px 0 0; padding: 0; max-height: 360px; overflow-y: auto; }
+.result {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border-radius: 12px;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  transition: background 0.15s, border-color 0.15s;
+}
+.result:hover { background: var(--cream); }
+.result.selected { background: rgba(191,160,104,0.12); border-color: var(--gold); }
+.result__art {
+  width: 46px; height: 46px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex: 0 0 auto;
+  background: var(--cream-deep);
+}
+.result__info { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+.result__title {
+  font-weight: 500; color: var(--ink);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.result__artist {
+  font-size: 0.82rem; color: var(--muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.result__check {
+  flex: 0 0 auto;
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  border: 1.5px solid var(--gold);
+  color: var(--gold-dark);
+  font-size: 1rem;
+}
+.result.selected .result__check { background: var(--gold); color: #fff; border-color: var(--gold); }
+
+/* Bloque secundario: pegar enlaces */
+.paste-block { margin-top: 18px; border-top: 1px solid var(--cream-deep); padding-top: 14px; }
+.paste-block summary {
+  cursor: pointer;
+  color: var(--sage-dark);
+  font-size: 0.9rem;
+  list-style: none;
+}
+.paste-block summary::-webkit-details-marker { display: none; }
+.paste-block summary::before { content: '➕ '; }
+.paste-block[open] summary::before { content: '➖ '; }
+.paste-block .field { margin-top: 14px; }
 
 /* ===== Lista de canciones ===== */
 .song-list { list-style: none; margin: 6px 0 0; padding: 0; }
@@ -318,7 +413,8 @@ main {
   height: 100%;
   border: 0;
 }
-.preview .sp-frame {
+.preview .sp-frame,
+.preview .ap-frame {
   width: 100%;
   max-width: 380px;
   border: 0;

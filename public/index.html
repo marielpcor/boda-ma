@@ -73,28 +73,48 @@
       </div>
     </section>
 
-    <!-- ===== Formulario ===== -->
+    <!-- ===== Agregar canciones ===== -->
     <section class="card form-section" id="agregar">
       <h2 class="section-title">Agregar canciones</h2>
-      <form id="song-form" autocomplete="off">
-        <div class="field">
-          <label for="by">Tu nombre</label>
-          <input type="text" id="by" name="by" placeholder="Ej. Mariel" required />
+
+      <div class="field">
+        <label for="by">Tu nombre</label>
+        <input type="text" id="by" name="by" placeholder="Ej. Mariel" required />
+      </div>
+
+      <!-- Buscador -->
+      <div class="field">
+        <label>Busca tu canción</label>
+        <div class="source-tabs" id="source-tabs" role="tablist" aria-label="Plataforma de búsqueda"></div>
+        <div class="search-box">
+          <input type="search" id="search-input" placeholder="Escribe el nombre de la canción o artista…" autocomplete="off" />
         </div>
-        <div class="field">
-          <label for="url">Enlace(s) de la canción</label>
-          <textarea id="url" name="url" rows="3" placeholder="Pega uno o varios enlaces, uno por línea:
+        <p class="search-status" id="search-status" role="status"></p>
+        <ul class="results" id="results"></ul>
+      </div>
+
+      <button type="button" class="btn" id="add-selected-btn" disabled>Agregar seleccionadas</button>
+      <p class="form-msg" id="form-msg" role="status"></p>
+
+      <!-- Opción secundaria: pegar enlaces -->
+      <details class="paste-block">
+        <summary>¿Prefieres pegar un enlace? (YouTube, Spotify, Apple…)</summary>
+        <form id="song-form" autocomplete="off">
+          <div class="field">
+            <label for="url">Enlace(s) de la canción</label>
+            <textarea id="url" name="url" rows="3" placeholder="Pega uno o varios enlaces, uno por línea:
 https://www.youtube.com/watch?v=...
-https://open.spotify.com/track/..." required></textarea>
-          <span class="hint-inline">💡 Puedes pegar <strong>varias canciones a la vez</strong>, una por línea.</span>
-        </div>
-        <div class="field">
-          <label for="name">Nombre de la canción <span class="optional">(opcional — solo si pegas un enlace; si no, lo detectamos solos)</span></label>
-          <input type="text" id="name" name="name" placeholder="Ej. Perfect — Ed Sheeran" />
-        </div>
-        <button type="submit" class="btn" id="submit-btn">Agregar a la lista</button>
-        <p class="form-msg" id="form-msg" role="status"></p>
-      </form>
+https://open.spotify.com/track/..."></textarea>
+            <span class="hint-inline">💡 Puedes pegar <strong>varias canciones a la vez</strong>, una por línea.</span>
+          </div>
+          <div class="field">
+            <label for="name">Nombre de la canción <span class="optional">(opcional — solo si pegas un enlace)</span></label>
+            <input type="text" id="name" name="name" placeholder="Ej. Perfect — Ed Sheeran" />
+          </div>
+          <button type="submit" class="btn btn--soft" id="submit-btn">Agregar enlace(s)</button>
+          <p class="form-msg" id="paste-msg" role="status"></p>
+        </form>
+      </details>
     </section>
 
     <!-- ===== Lista de canciones ===== -->
